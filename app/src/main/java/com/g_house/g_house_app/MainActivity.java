@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
 
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -85,11 +86,30 @@ public class MainActivity extends AppCompatActivity {
     {
         TextView t = findViewById(R.id.centered_text);
 
+        BluetoothDevice piDevice = null;
+
         t.append("Getting list of paired devices:\n");
         Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
         for(BluetoothDevice device : pairedDevices)
         {
+            if(device.getName().equals("raspberrypi"))
+            {
+                piDevice = device;
+            }
             t.append(String.format("%s\t%s\n", device.getName(), device.getAddress()));
+        }
+
+        if(piDevice != null)
+        {
+            t.append("Raspberry Pi found.\n");
+
+            ConnectThread thread = new ConnectThread(piDevice);
+            try
+            {
+                thread.start();
+                thread.join();
+            }
+            catch(Exception ignored) {}
         }
 
         t.append("Done.\n");
@@ -106,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
             mmDevice = device;
             try
             {
-                tmp = device.createRfcommSocketToServiceRecord(UUID.randomUUID());
+                tmp = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));
             }
             catch(Exception ignored) {}
 
@@ -116,13 +136,18 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void run()
         {
+            TextView t = findViewById(R.id.centered_text);
             bluetoothAdapter.cancelDiscovery();
             try
             {
+                t.append("Attempting to connect to Pi.\n");
+
                 mmSocket.connect();
             }
             catch(IOException connectException)
             {
+                t.append("Failed to connect to Pi: ");
+                t.append(String.format("%s\n", connectException.toString()));
                 try
                 {
                     mmSocket.close();
@@ -148,17 +173,15 @@ public class MainActivity extends AppCompatActivity {
         public void manageSocket()
         {
             InputStream inputStream;
-            OutputStream outputStream;
 
             try
             {
                 inputStream = mmSocket.getInputStream();
-                outputStream = mmSocket.getOutputStream();
-
                 byte[] buffer = new byte[1024];
-
                 inputStream.read(buffer);
-                outputStream.write(buffer);
+
+                TextView t = findViewById(R.id.centered_text);
+                t.append(String.format("Received String: %s\n", new String(buffer)));
             }
             catch(Exception ignored) {}
 
