@@ -3,7 +3,9 @@ package com.g_house.g_house_app;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -26,35 +28,42 @@ import java.util.UUID;
 public class MainActivity extends AppCompatActivity {
     BluetoothAdapter bluetoothAdapter;
     static final int REQUEST_ENABLE_BT = 1;
+    BluetoothDevice piDevice;
+
+    int deviceSelection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final Button button = findViewById(R.id.button2);
-        button.setOnClickListener(new View.OnClickListener() {
+        piDevice = null;
+
+        final Button refreshB = findViewById(R.id.refreshButton);
+        refreshB.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                bluetoothTest();
+                if(piDevice != null)
+                {
+                    ConnectThread thread = new ConnectThread(piDevice);
+                    try
+                    {
+                        thread.start();
+                        thread.join();
+                    }
+                    catch(Exception ignored) {}
+                }
             }
         });
 
-        bluetoothTest();
+        final Button connectB = findViewById(R.id.connectButton);
+        connectB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                btConnect();
+            }
+        });
 
-        //try
-        //{
-        //    OutputStreamWriter osw = new OutputStreamWriter((getApplicationContext().openFileOutput("test.txt", Context.MODE_PRIVATE)));
-        //    osw.write("Test 123\n456 789");
-        //    osw.close();
-
-        //    char[] buffer = new char[100];
-        //    InputStreamReader isw = new InputStreamReader(getApplicationContext().openFileInput("test.txt"));
-        //    isw.read(buffer, 0, 100);
-        //    TextView t = findViewById(R.id.centered_text);
-        //    t.setText(buffer, 0, 100);
-        //    isw.close();
-        //}
-        //catch(Exception ignore) {}
+        //bluetoothTest();
     }
 
     @Override
@@ -69,6 +78,65 @@ public class MainActivity extends AppCompatActivity {
             //TextView t = findViewById(R.id.centered_text);
             //t.append("An Error Had Occurred.\n");
         }
+    }
+
+    private void btConnect()
+    {
+        /* Some of this stuff might be able to be moved elsewhere so it's only executed once */
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if(bluetoothAdapter == null)
+        {
+            //t.append("Device doesn't support bluetooth.\n");
+            return;
+        }
+
+        if(!bluetoothAdapter.isEnabled())
+        {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
+        else
+        {
+            //Get list of bt device names as String array
+            Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+            BluetoothDevice[] devices = new BluetoothDevice[pairedDevices.size()];
+            pairedDevices.toArray(devices);
+            String[] names = new String[devices.length];
+            for(int i = 0; i < devices.length; i++)
+            {
+                names[i] = devices[i].getName();
+            }
+            selectDevice(names);
+
+            piDevice = devices[deviceSelection];
+
+            if(piDevice != null)
+            {
+                //t.append("Raspberry Pi found.\n");
+
+                ConnectThread thread = new ConnectThread(piDevice);
+                try
+                {
+                    thread.start();
+                    thread.join();
+                }
+                catch(Exception ignored) {}
+            }
+        }
+    }
+
+    private void selectDevice(String[] list)
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select a bluetooth device");
+        builder.setItems(list, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                deviceSelection = which;
+            }
+        });
+        builder.show();
     }
 
     private void bluetoothTest()
