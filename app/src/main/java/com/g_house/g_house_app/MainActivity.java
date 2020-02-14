@@ -8,14 +8,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.nio.ByteBuffer;
 import java.util.Set;
 import java.util.UUID;
 
@@ -62,21 +66,21 @@ public class MainActivity extends AppCompatActivity {
         }
         else
         {
-            TextView t = findViewById(R.id.centered_text);
-            t.append("An Error Had Occurred.\n");
+            //TextView t = findViewById(R.id.centered_text);
+            //t.append("An Error Had Occurred.\n");
         }
     }
 
     private void bluetoothTest()
     {
-        TextView t = findViewById(R.id.centered_text);
-        t.setText("");
+        //TextView t = findViewById(R.id.centered_text);
+        //t.setText("");
 
-        t.append("Getting Bluetooth adapter.\n");
+        //t.append("Getting Bluetooth adapter.\n");
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if(bluetoothAdapter == null)
         {
-            t.append("Device doesn't support bluetooth.\n");
+            //t.append("Device doesn't support bluetooth.\n");
             return;
         }
 
@@ -93,11 +97,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void listBtDevices()
     {
-        TextView t = findViewById(R.id.centered_text);
+        //TextView t = findViewById(R.id.centered_text);
 
         BluetoothDevice piDevice = null;
 
-        t.append("Getting list of paired devices:\n");
+        //t.append("Getting list of paired devices:\n");
         Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
         for(BluetoothDevice device : pairedDevices)
         {
@@ -105,12 +109,12 @@ public class MainActivity extends AppCompatActivity {
             {
                 piDevice = device;
             }
-            t.append(String.format("%s\t%s\n", device.getName(), device.getAddress()));
+            //t.append(String.format("%s\t%s\n", device.getName(), device.getAddress()));
         }
 
         if(piDevice != null)
         {
-            t.append("Raspberry Pi found.\n");
+            //t.append("Raspberry Pi found.\n");
 
             ConnectThread thread = new ConnectThread(piDevice);
             try
@@ -121,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
             catch(Exception ignored) {}
         }
 
-        t.append("Done.\n");
+        //t.append("Done.\n");
     }
 
     private class ConnectThread extends Thread
@@ -146,18 +150,18 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void run()
         {
-            TextView t = findViewById(R.id.centered_text);
+            //TextView t = findViewById(R.id.centered_text);
             bluetoothAdapter.cancelDiscovery();
             try
             {
-                t.append("Attempting to connect to Pi.\n");
+                //t.append("Attempting to connect to Pi.\n");
 
                 mmSocket.connect();
             }
             catch(IOException connectException)
             {
-                t.append("Failed to connect to Pi: ");
-                t.append(String.format("%s\n", connectException.toString()));
+                //t.append("Failed to connect to Pi: ");
+                //t.append(String.format("%s\n", connectException.toString()));
                 try
                 {
                     mmSocket.close();
@@ -188,14 +192,53 @@ public class MainActivity extends AppCompatActivity {
             {
                 inputStream = mmSocket.getInputStream();
                 byte[] buffer = new byte[1024];
-                inputStream.read(buffer);
 
-                TextView t = findViewById(R.id.centered_text);
-                t.append(String.format("Received String: %s\n", new String(buffer)));
+                inputStream.read(buffer, 0, 4);
+                int size = ByteBuffer.wrap(buffer, 0, 4).getInt();
+                int read;
+
+                File f = File.createTempFile("data", null);
+                FileOutputStream ofstream = new FileOutputStream(f);
+                while((read = inputStream.read(buffer)) > 0)
+                {
+                    ofstream.write(buffer, 0, read);
+                }
+                ofstream.close();
+
+                TableLayout tl = findViewById(R.id.dataTable);
+                tl.removeAllViews(); //clear the table
+
+                String[] headings = {"Time", "pH", "EC", "Temperature"};
+                addTableRow(tl, headings);
+
+                String line;
+                BufferedReader reader = new BufferedReader(new FileReader(f));
+                while((line = reader.readLine()) != null)
+                {
+                    addTableRow(tl, line.split(","));
+                }
+
+                f.deleteOnExit();
             }
             catch(Exception ignored) {}
 
             cancel();
+        }
+
+        private void addTableRow(TableLayout tl, String[] data)
+        {
+            TableRow row = new TableRow(MainActivity.this);
+            TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT);
+            row.setLayoutParams(lp);
+
+            for(String tok : data)
+            {
+                TextView col = new TextView(MainActivity.this);
+                col.setText(tok);
+                row.addView(col);
+            }
+
+            tl.addView(row);
         }
     }
 }
