@@ -196,6 +196,22 @@ public class MainActivity extends AppCompatActivity {
         //t.append("Done.\n");
     }
 
+    private void addTableRow(TableLayout tl, String[] data)
+    {
+        TableRow row = new TableRow(MainActivity.this);
+        TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT);
+        row.setLayoutParams(lp);
+
+        for(String tok : data)
+        {
+            TextView col = new TextView(MainActivity.this);
+            col.setText(tok);
+            row.addView(col);
+        }
+
+        tl.addView(row);
+    }
+
     private class ConnectThread extends Thread
     {
         private final BluetoothSocket mmSocket;
@@ -243,13 +259,11 @@ public class MainActivity extends AppCompatActivity {
             manageSocket();
         }
 
-        public void cancel()
-        {
-            try
-            {
+        public void cancel() {
+            try {
                 mmSocket.close();
+            } catch (IOException ignored) {
             }
-            catch (IOException ignored) { }
         }
 
         public void manageSocket()
@@ -291,22 +305,6 @@ public class MainActivity extends AppCompatActivity {
             catch(Exception ignored) {}
 
             cancel();
-        }
-
-        private void addTableRow(TableLayout tl, String[] data)
-        {
-            TableRow row = new TableRow(MainActivity.this);
-            TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT);
-            row.setLayoutParams(lp);
-
-            for(String tok : data)
-            {
-                TextView col = new TextView(MainActivity.this);
-                col.setText(tok);
-                row.addView(col);
-            }
-
-            tl.addView(row);
         }
     }
 }
