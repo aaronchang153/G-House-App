@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
 
         tabLayout.addTab(tabLayout.newTab().setText("Table"));
         tabLayout.addTab(tabLayout.newTab().setText("Parameters"));
-        tabLayout.addTab(tabLayout.newTab().setText("Log"));
+        //tabLayout.addTab(tabLayout.newTab().setText("Log"));
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
         final MyAdapter adapter = new MyAdapter(this, getSupportFragmentManager(), tabLayout.getTabCount());
