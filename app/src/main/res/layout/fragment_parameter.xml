@@ -33,6 +33,10 @@
         android:id="@+id/tableCurrentParam"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
         android:stretchColumns="*"
         app:layout_constraintTop_toBottomOf="@+id/selectButton">
     </TableLayout>
@@ -175,12 +179,29 @@
 
         </LinearLayout>
 
-        <Button
-            android:id="@+id/send_button"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="@string/send_button"/>
+            android:gravity="center"
+            android:layout_gravity="center">
+
+            <Button
+                android:id="@+id/preset_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:layout_marginEnd="5dp"
+                android:text="@string/preset_button"/>
+
+            <Button
+                android:id="@+id/send_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:layout_marginStart="5dp"
+                android:text="@string/send_button"/>
+        </LinearLayout>
 
     </LinearLayout>
 

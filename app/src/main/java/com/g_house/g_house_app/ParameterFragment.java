@@ -1,5 +1,7 @@
 package com.g_house.g_house_app;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,8 +11,11 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+
 public class ParameterFragment extends AbstractBluetoothFragment {
     View view;
+    ArrayList<ParameterPreset> presets;
 
     public ParameterFragment() {
         super();
@@ -19,6 +24,9 @@ public class ParameterFragment extends AbstractBluetoothFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        presets = new ArrayList<>();
+        createPresets();
 
         view = inflater.inflate(R.layout.fragment_parameter, container, false);
 
@@ -103,6 +111,14 @@ public class ParameterFragment extends AbstractBluetoothFragment {
             }
         });
 
+        final Button preset_button = view.findViewById(R.id.preset_button);
+        preset_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectPreset();
+            }
+        });
+
         final Button send_button = view.findViewById(R.id.send_button);
         send_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -115,9 +131,9 @@ public class ParameterFragment extends AbstractBluetoothFragment {
         tl.removeAllViews();
         String[] row = {"pH Low", "pH High", "EC Low"};
         addTableRow(tl, row);
-        row[0] = "0.0";
-        row[1] = "0.0";
-        row[2] = "0.0";
+        row[0] = "0.00";
+        row[1] = "0.00";
+        row[2] = "0.00";
         addTableRow(tl, row);
 
         return view;
@@ -174,5 +190,35 @@ public class ParameterFragment extends AbstractBluetoothFragment {
         btConnect();
         sendParameters(params);
         btClose();
+    }
+
+    private void createPresets()
+    {
+        presets.add(new ParameterPreset("Tomatoes", 5.8f, 6.3f, 600.0f));
+    }
+
+    private void selectPreset()
+    {
+        String[] list = new String[presets.size()];
+        for(int i = 0; i < presets.size(); i++)
+        {
+            list[i] = presets.get(i).getName();
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("Select a preset");
+        builder.setItems(list, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                TextView t;
+                t = view.findViewById(R.id.phLo_value);
+                t.setText(presets.get(which).getPHLow());
+                t = view.findViewById(R.id.phHi_value);
+                t.setText(presets.get(which).getPHHigh());
+                t = view.findViewById(R.id.ecLo_value);
+                t.setText(presets.get(which).getECLow());
+            }
+        });
+        builder.show();
     }
 }
