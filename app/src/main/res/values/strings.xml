@@ -2,4 +2,11 @@
     <string name="app_name">G-House-App</string>
     <string name="select_button">Select Device</string>
     <string name="update_button">Update</string>
+    <string name="up_button">+</string>
+    <string name="down_button">-</string>
+    <string name="phLoLabel">pH Low:</string>
+    <string name="phHiLabel">pH High:</string>
+    <string name="ecLoLabel">EC Low:</string>
+    <string name="threshValueInit">0.00</string>
+    <string name="send_button">Send Parameters</string>
 </resources>
