@@ -1,7 +1,6 @@
 package com.g_house.g_house_app;
 
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,9 +16,8 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.ArrayList;
 
-public class TableFragment extends AbstractBluetoothFragment {
+public class GraphFragment extends AbstractBluetoothFragment {
     View view;
     TextView log;
 
@@ -28,7 +26,7 @@ public class TableFragment extends AbstractBluetoothFragment {
     GraphView temp_graph;
     GraphView co2_graph;
 
-    public TableFragment()
+    public GraphFragment()
     {
         super();
     }
@@ -48,6 +46,7 @@ public class TableFragment extends AbstractBluetoothFragment {
             public void onClick(View v){
                 //updateTable();
                 updateGraphs();
+                updateSensorData();
             }
         });
 
@@ -70,6 +69,16 @@ public class TableFragment extends AbstractBluetoothFragment {
 
         co2_graph = view.findViewById(R.id.graph_co2);
         co2_graph.getGridLabelRenderer().setHorizontalLabelsVisible(false);
+
+        TableLayout tl = view.findViewById(R.id.currentValueTable);
+        tl.removeAllViews();
+        String[] row = {"pH", "EC", "Temp", "CO2"};
+        addTableRow(tl, row);
+        row[0] = "0.00";
+        row[1] = "0.00";
+        row[2] = "0.00";
+        row[3] = "0.00";
+        addTableRow(tl, row);
 
         return view;
     }
@@ -101,7 +110,7 @@ public class TableFragment extends AbstractBluetoothFragment {
                 TableLayout tl = view.findViewById(R.id.dataTable);
                 tl.removeAllViews(); //clear the table
 
-                String[] headings = {"Time", "pH", "EC", "Temperature", "CO2"};
+                String[] headings = {"Time", "pH", "EC", "Temp", "CO2"};
                 addTableRow(tl, headings);
 
                 try
@@ -167,6 +176,24 @@ public class TableFragment extends AbstractBluetoothFragment {
                 {
                     e.printStackTrace();
                 }
+            }
+        });
+    }
+
+    private void updateSensorData()
+    {
+        btConnect();
+        final String[] data = getSensorData();
+        btClose();
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                TableLayout tl = view.findViewById(R.id.currentValueTable);
+                tl.removeAllViews(); //clear the table
+
+                String[] row = {"pH", "EC", "Temp", "CO2"};
+                addTableRow(tl, row);
+                addTableRow(tl, data);
             }
         });
     }
