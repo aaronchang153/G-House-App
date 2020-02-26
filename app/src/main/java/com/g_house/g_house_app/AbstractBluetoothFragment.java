@@ -14,7 +14,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.UUID;
 
@@ -27,6 +26,7 @@ public abstract class AbstractBluetoothFragment extends Fragment {
     static final byte CMD_GET_LOG      = 0;
     static final byte CMD_GET_PARAM    = 1;
     static final byte CMD_UPDATE_PARAM = 2;
+    static final byte CMD_SENSOR_DATA  = 3;
 
     BluetoothSocket mmSocket;
     BluetoothDevice[] devices;
@@ -218,5 +218,38 @@ public abstract class AbstractBluetoothFragment extends Fragment {
             }
             catch (Exception ignored) { }
         }
+    }
+
+    public String[] getSensorData()
+    {
+        String[] data = null;
+        if(piDevice != null)
+        {
+            try
+            {
+                InputStream inputStream = mmSocket.getInputStream();
+                OutputStream outputStream = mmSocket.getOutputStream();
+                byte[] buffer = new byte[1024];
+
+                buffer[0] = CMD_SENSOR_DATA;
+                outputStream.write(buffer, 0, 1);
+
+                inputStream.read(buffer, 0, 4);
+                ByteBuffer byteBuffer = ByteBuffer.wrap(buffer, 0, 4);
+                byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+                int size = byteBuffer.getInt();
+
+                inputStream.read(buffer, 0, size);
+                byteBuffer = ByteBuffer.wrap(buffer, 0, size);
+                data = new String(byteBuffer.array(), "UTF-8").split(",");
+
+                outputStream.write(buffer, 0, 1);
+
+                inputStream.close();
+                outputStream.close();
+            }
+            catch (Exception ignored) { }
+        }
+        return data;
     }
 }
