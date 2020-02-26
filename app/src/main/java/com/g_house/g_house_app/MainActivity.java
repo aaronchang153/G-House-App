@@ -17,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
         tabLayout = findViewById(R.id.tab_layout);
         viewPager = findViewById(R.id.view_pager);
 
-        tabLayout.addTab(tabLayout.newTab().setText("Table"));
+        tabLayout.addTab(tabLayout.newTab().setText("Graph"));
         tabLayout.addTab(tabLayout.newTab().setText("Parameters"));
         //tabLayout.addTab(tabLayout.newTab().setText("Log"));
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
