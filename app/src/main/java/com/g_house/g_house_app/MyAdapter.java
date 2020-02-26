@@ -9,7 +9,7 @@ public class MyAdapter extends FragmentPagerAdapter {
     private Context myContext;
     int totalTabs;
 
-    TableFragment tableFragment;
+    GraphFragment graphFragment;
     ParameterFragment parameterFragment;
     LogFragment logFragment;
 
@@ -18,7 +18,7 @@ public class MyAdapter extends FragmentPagerAdapter {
         myContext = context;
         this.totalTabs = totalTabs;
 
-        tableFragment = new TableFragment();
+        graphFragment = new GraphFragment();
         parameterFragment = new ParameterFragment();
         logFragment = new LogFragment();
     }
@@ -28,7 +28,7 @@ public class MyAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
         switch (position) {
             case 0:
-                return tableFragment;
+                return graphFragment;
             case 1:
                 return parameterFragment;
             case 2:
